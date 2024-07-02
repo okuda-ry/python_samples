@@ -1,0 +1,29 @@
+{% extends 'links/base.html' %}
+{% load static %}
+{% block title %}{{ profile.user.username }}'s profile{% endblock %}
+{% block content %}
+<div class="profile-card">
+  <div class="profile-image-container">
+    {% if profile.profile_image %}
+    <img src="{{ profile.profile_image.url }}" alt="{{ profile.user.username }}" class="profile-image" />
+    {% else %}
+    <div class="default-profile-image"></div>
+    {% endif %}
+  </div>
+  <h1>{{ profile.user.username }}</h1>
+  <p class="bio">{{ profile.bio }}</p>
+  <div class="links">
+    {% for link in links %}
+    <a href="{{ link.url }}" class="link" target="_blank">
+      {{ link.title }}
+    </a>
+    {% endfor %}
+  </div>
+  {% if user.is_authenticated and user == profile.user %}
+  <div class="profile-actions">
+    <a href="{% url 'add_link' %}" class="btn btn-primary">Add link</a>
+    <a href="{% url 'edit_profile' %}" class="btn btn-secondary">Edit profile</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

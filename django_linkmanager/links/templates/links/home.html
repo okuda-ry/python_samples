@@ -1,0 +1,7 @@
+{% extends 'links/base.html' %} {% block title %}Welcome to OKlink{% endblock %}
+{% block content %}
+<h1>Welcome to OKlink</h1>
+<p>Create your own link in bio page!</p>
+<a href="{% url 'login' %}">Log In</a>
+<a href="{% url 'signup' %}">Sign Up</a>
+{% endblock %}
