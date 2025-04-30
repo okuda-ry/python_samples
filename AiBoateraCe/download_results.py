@@ -25,7 +25,7 @@ print("作業の開始")
 makedirs(SAVE_DIR, exist_ok=True)
 
 START_DATE = "2020-09-01"
-END_DATE = "2020-09-07"
+END_DATE = "2024-09-01"
 # 開始日と終了日を日付型に変換して格納
 start_date = dt.strptime(START_DATE, "%Y-%m-%d")
 end_date = dt.strptime(END_DATE, "%Y-%m-%d")
