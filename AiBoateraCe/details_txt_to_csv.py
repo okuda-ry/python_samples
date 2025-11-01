@@ -5,10 +5,10 @@ TEXT_FILE_DIR = "downloads/results/txt/"
 CSV_FILE_DIR = "downloads/results/details/"
 
 # CSVファイルの名前を指定　※YYYYMMDDには対象期間を入力
-CSV_FILE_NAME = "details_200901-200907.csv"
+CSV_FILE_NAME = "details_200901-240907.csv"
 
 # CSVファイルのヘッダーを指定
-CSV_FILE_HEADER = "レースコード,タイトル,日次,レース日,レース場,\
+CSV_FILE_HEADER = "タイトル,日次,レース日,レース場,\
 レース回,レース名,距離(m),天候,風向,風速(m),波の高さ(cm),決まり手,\
 単勝_艇番,単勝_払戻金,複勝_1着_艇番,複勝_1着_払戻金,複勝_2着_艇番,複勝_2着_払戻金,\
 2連単_組番,2連単_払戻金,2連単_人気,2連複_組番,2連複_払戻金,2連複_人気,\
@@ -40,6 +40,16 @@ import re
 def get_data(text_file):
     # CSVファイルを追記モードで開く
     csv_file = open(CSV_FILE_DIR + CSV_FILE_NAME, "a", encoding="shift_jis")
+
+    result_win = ""
+    result_place_show = ""
+    result_place_show = ""
+    result_exacta = ""
+    result_quinella = ""
+    result_quinella_place = ""
+    result_trifecta = ""
+    result_trio = ""
+    result_racer = ""
 
     # テキストファイルから中身を順に取り出す
     for line in text_file:
@@ -234,47 +244,9 @@ def get_data(text_file):
                 # 次の行を読み込む
                 line = text_file.readline()
 
-            # レースコードを生成
-            dict_stadium = {
-                "桐生": "KRY",
-                "戸田": "TDA",
-                "江戸川": "EDG",
-                "平和島": "HWJ",
-                "多摩川": "TMG",
-                "浜名湖": "HMN",
-                "蒲郡": "GMG",
-                "常滑": "TKN",
-                "津": "TSU",
-                "三国": "MKN",
-                "琵琶湖": "BWK",
-                "住之江": "SME",
-                "尼崎": "AMG",
-                "鳴門": "NRT",
-                "丸亀": "MRG",
-                "児島": "KJM",
-                "宮島": "MYJ",
-                "徳山": "TKY",
-                "下関": "SMS",
-                "若松": "WKM",
-                "芦屋": "ASY",
-                "福岡": "FKO",
-                "唐津": "KRT",
-                "大村": "OMR",
-            }
-
-            race_code = (
-                date[0:4]
-                + date[5:7]
-                + date[8:10]
-                + dict_stadium[stadium]
-                + race_round[0:2]
-            )
-
             # 抽出したデータをCSVファイルに書き込む
             csv_file.write(
-                race_code
-                + ","
-                + title
+                title
                 + ","
                 + day
                 + ","

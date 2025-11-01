@@ -2,7 +2,7 @@
 SAVE_DIR = "downloads/racelists/lzh/"
 
 # リクエスト間隔を指定(秒)　※サーバに負荷をかけないよう3秒以上を推奨
-INTERVAL = 3
+INTERVAL = 1
 
 # URLの固定部分を指定
 FIXED_URL = "http://www1.mbrace.or.jp/od2/B/"
@@ -27,7 +27,7 @@ print("作業を開始します")
 makedirs(SAVE_DIR, exist_ok=True)
 
 
-START_DATE = "2020-09-01"
+START_DATE = "2022-07-05"
 END_DATE = "2024-09-01"
 # 開始日と終了日を日付型に変換して格納
 start_date = dt.strptime(START_DATE, "%Y-%m-%d")

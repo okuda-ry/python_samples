@@ -5,7 +5,7 @@ TEXT_FILE_DIR = "downloads\\racelists\\txt\\"
 CSV_FILE_DIR = "downloads\\racelists\\csv\\"
 
 # CSVファイルの名前を指定　※YYYYMMDDには対象期間を入力
-CSV_FILE_NAME = "timetable_200901-200907.csv"
+CSV_FILE_NAME = "timetable_200901-240901.csv"
 
 # CSVファイルのヘッダーを指定
 CSV_FILE_HEADER = "タイトル,日次,レース日,レース場,レース回,レース名,距離(m),電話投票締切予定,\
