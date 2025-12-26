@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Color Game</title>
+        <style>
+            .box {
+      width: 150px;
+      height: 150px;
+      border: 1px solid #000;
+      margin: 10px;
+    }
+        </style>
+    </head>
+
+    <body>
+
+{{ target|json_script:"target-data" }}
+
+<h2>🎯 お題の色</h2>
+<div id="targetBox" class="box"></div>
+
+<h2>🚰 蛇口</h2>
+赤 <input type="range" id="red" min="0" max="100"> <span id="redVal">0</span><br>
+緑 <input type="range" id="green" min="0" max="100"> <span id="greenVal">0</span><br>
+青 <input type="range" id="blue" min="0" max="100"> <span id="blueVal">0</span><br>
+
+<h2>💧 合成結果</h2>
+<div id="result" class="box"></div>
+
+<button onclick="judge()">判定</button>
+<p id="message"></p>
+
+<script>
+const targetColor = JSON.parse(document.getElementById("target-data").textContent);
+document.getElementById("targetBox").style.backgroundColor =
+  `rgb(${targetColor.r},${targetColor.g},${targetColor.b})`;
+
+function mixColor() {
+  const r = document.getElementById("red").value;
+  const g = document.getElementById("green").value;
+  const b = document.getElementById("blue").value;
+
+  const total = Number(r) + Number(g) + Number(b);
+  if (total === 0) return [0,0,0];
+
+  const rr = Math.floor(255 * Number(r) / total);
+  const gg = Math.floor(255 * Number(g) / total);
+  const bb = Math.floor(255 * Number(b) / total);
+
+  return [rr, gg, bb];
+}
+
+function update() {
+  // スライダー値表示を更新
+  document.getElementById("redVal").textContent = document.getElementById("red").value;
+  document.getElementById("greenVal").textContent = document.getElementById("green").value;
+  document.getElementById("blueVal").textContent = document.getElementById("blue").value;
+
+  const [r,g,b] = mixColor();
+  document.getElementById("result").style.backgroundColor =
+    `rgb(${r},${g},${b})`;
+}
+
+document.querySelectorAll("input[type=range]")
+  .forEach(s => s.oninput = update);
+
+// 初期表示を更新
+update();
+
+function judge() {
+  const [r,g,b] = mixColor();
+
+  // サーバにお題の割合を渡してサーバ側で同じ合成を行わせ、応答にも割合を含める
+  fetch(`/judge/?r=${r}&g=${g}&b=${b}&pr=${targetColor.p_r}&pg=${targetColor.p_g}&pb=${targetColor.p_b}`)
+    .then(res => res.json())
+    .then(data => {
+      const msgEl = document.getElementById("message");
+      // 答え表示は割合のみ（RGB表示はしない）
+      const percent = data.target_percent
+        ? `割合: ${data.target_percent.p_r}% ${data.target_percent.p_g}% ${data.target_percent.p_b}%`
+        : `割合: ${targetColor.p_r}% ${targetColor.p_g}% ${targetColor.p_b}%`;
+      const rankText = `${data.rank}ランク — 差: ${data.diff}`;
+      msgEl.innerHTML = (data.clear ? `🎉 ${rankText}` : rankText) + `<br>` + percent;
+    });
+}
+</script>
+</body>
+</html>
