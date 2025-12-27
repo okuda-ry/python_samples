@@ -1,40 +1,98 @@
 <!DOCTYPE html>
 <html>
+    {% load static %}
     <head>
         <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>Color Game</title>
-        <style>
-            .box {
-      width: 150px;
-      height: 150px;
-      border: 1px solid #000;
-      margin: 10px;
-    }
-        </style>
+        <link rel="stylesheet" href="{% static 'game/style.css' %}">
     </head>
 
     <body>
 
 {{ target|json_script:"target-data" }}
 
-<h2>🎯 お題の色</h2>
-<div id="targetBox" class="box"></div>
+    <div class="wrap">
+        <header>
+            <div class="header-wrap">
+                <div class="header-left">
+                    <h1>Color Game</h1>
+                    <p>蛇口で色を注いで、目標に近づけよう</p>
+                </div>
+            </div>
+        </header>
 
-<h2>🚰 蛇口</h2>
-赤 <input type="range" id="red" min="0" max="100"> <span id="redVal">0</span><br>
-緑 <input type="range" id="green" min="0" max="100"> <span id="greenVal">0</span><br>
-青 <input type="range" id="blue" min="0" max="100"> <span id="blueVal">0</span><br>
+        <section class="panel">
+            <div class="controls">
+                <p style="margin:0 0 12px 0;color:var(--muted)">蛇口で赤・緑・青の水を注いで、できるだけ目標色に近づけましょう。</p>
+                <div class="tap-row">
+                    <div class="tap" style="--t:#ef4444">
+                        <div class="label">赤</div>
+                        <input type="range" id="red" min="0" max="100">
+                        <div class="val"><span id="redVal">0</span>%</div>
+                    </div>
+                    <div class="tap" style="--t:#10b981">
+                        <div class="label">緑</div>
+                        <input type="range" id="green" min="0" max="100">
+                        <div class="val"><span id="greenVal">0</span>%</div>
+                    </div>
+                    <div class="tap" style="--t:#3b82f6">
+                        <div class="label">青</div>
+                        <input type="range" id="blue" min="0" max="100">
+                        <div class="val"><span id="blueVal">0</span>%</div>
+                    </div>
+                </div>
+                
+                <div class="mix-area" style="margin-top:18px;display:block">
+                    <h2 style="margin:0 0 8px 0;color:#e6eef8;font-size:14px;display:flex;align-items:center;gap:12px">💧 合成結果
+                        <span class="eval-note" style="font-size:12px;color:var(--muted);font-weight:500">合成は割合で評価されます</span>
+                    </h2>
+                    <div class="result-row" style="display:flex;align-items:center;gap:18px">
+                        <div id="result" class="result-display">
+                            <div class="result-layers">
+                                <div class="layer red" id="layerR"></div>
+                                <div class="layer green" id="layerG"></div>
+                                <div class="layer blue" id="layerB"></div>
+                            </div>
+                            <div id="mixed" class="mix-overlay"></div>
+                        </div>
+                        <div class="result-controls">
+                            <div class="controls-center">
+                                <div class="droplet" id="droplet" title="合成色">合成</div>
+                                <div class="btn-stack">
+                                    <button class="cta" id="judgeBtn">判定</button>
+                                    <button class="cta" id="resetBtn" style="background:transparent;border:1px solid rgba(255,255,255,0.06)">リセット</button>
+                                </div>
+                            </div>
+                            <div id="message" class="final-score"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-<h2>💧 合成結果</h2>
-<div id="result" class="box"></div>
-
-<button onclick="judge()">判定</button>
-<p id="message"></p>
+        <aside class="panel sidebar">
+            <h2 style="margin:0 0 12px 0;color:#e6eef8;font-size:14px">🎯 お題の色</h2>
+            <div id="targetBox" class="color-swatch" style="margin-bottom:12px"></div>
+            <button class="cta" id="newTargetBtn" style="background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px 10px;border-radius:8px">別のお題</button>
+            
+            
+        </aside>
+            
+            
+    </div>
 
 <script>
-const targetColor = JSON.parse(document.getElementById("target-data").textContent);
+let targetColor = JSON.parse(document.getElementById("target-data").textContent);
 document.getElementById("targetBox").style.backgroundColor =
-  `rgb(${targetColor.r},${targetColor.g},${targetColor.b})`;
+    `rgb(${targetColor.r},${targetColor.g},${targetColor.b})`;
+// show target percentages if available
+if(document.getElementById('targetPerc')){
+    const p = (targetColor.p_r !== undefined)
+        ? `${targetColor.p_r}% / ${targetColor.p_g}% / ${targetColor.p_b}%`
+        : '--';
+    document.getElementById('targetPerc').textContent = p;
+}
 
 function mixColor() {
   const r = document.getElementById("red").value;
@@ -52,14 +110,15 @@ function mixColor() {
 }
 
 function update() {
-  // スライダー値表示を更新
   document.getElementById("redVal").textContent = document.getElementById("red").value;
   document.getElementById("greenVal").textContent = document.getElementById("green").value;
   document.getElementById("blueVal").textContent = document.getElementById("blue").value;
 
   const [r,g,b] = mixColor();
-  document.getElementById("result").style.backgroundColor =
-    `rgb(${r},${g},${b})`;
+  const rgb = `rgb(${r},${g},${b})`;
+    document.getElementById("result").style.background = `linear-gradient(180deg, ${rgb}, rgba(0,0,0,0.12))`;
+    document.getElementById("droplet").style.background = rgb;
+  document.getElementById("droplet").style.color = (r+g+b)/3 > 160 ? '#022' : '#fff';
 }
 
 document.querySelectorAll("input[type=range]")
@@ -68,22 +127,158 @@ document.querySelectorAll("input[type=range]")
 // 初期表示を更新
 update();
 
-function judge() {
-  const [r,g,b] = mixColor();
-
-  // サーバにお題の割合を渡してサーバ側で同じ合成を行わせ、応答にも割合を含める
-  fetch(`/judge/?r=${r}&g=${g}&b=${b}&pr=${targetColor.p_r}&pg=${targetColor.p_g}&pb=${targetColor.p_b}`)
-    .then(res => res.json())
-    .then(data => {
-      const msgEl = document.getElementById("message");
-      // 答え表示は割合のみ（RGB表示はしない）
-      const percent = data.target_percent
-        ? `割合: ${data.target_percent.p_r}% ${data.target_percent.p_g}% ${data.target_percent.p_b}%`
-        : `割合: ${targetColor.p_r}% ${targetColor.p_g}% ${targetColor.p_b}%`;
-      const rankText = `${data.rank}ランク — 差: ${data.diff}`;
-      msgEl.innerHTML = (data.clear ? `🎉 ${rankText}` : rankText) + `<br>` + percent;
-    });
+function animatePour(pr,pg,pb,onComplete){
+    // pr/pg/pb are percentages (0-100)
+    const rEl = document.getElementById('layerR');
+    const gEl = document.getElementById('layerG');
+    const bEl = document.getElementById('layerB');
+    // reset
+    rEl.style.height = '0%'; gEl.style.height = '0%'; bEl.style.height = '0%';
+    // stagger pours: red -> green -> blue
+    setTimeout(()=>{ rEl.style.height = pr + '%'; spawnDrops('red',3); }, 120);
+    setTimeout(()=>{ gEl.style.height = pg + '%'; spawnDrops('green',3); }, 420);
+    setTimeout(()=>{ bEl.style.height = pb + '%'; spawnDrops('blue',3); }, 720);
+    // after pours complete, start mixing animation that blends layers into final color
+    const mixDelay = 1200 + 900; // allow pour transitions to visually finish
+    setTimeout(()=>{
+        const [mr,mg,mb] = mixColor();
+        startMix(mr,mg,mb,onComplete);
+    }, mixDelay);
 }
+
+// create small droplet particles that fall into the result box
+function spawnDrops(color, count){
+    const resultRect = document.getElementById('result').getBoundingClientRect();
+    for(let i=0;i<count;i++){
+        const d = document.createElement('div');
+        d.className = 'drop-particle';
+        if(Math.random()<0.4) d.classList.add('small');
+        d.style.background = color === 'red' ? '#ef4444' : color === 'green' ? '#10b981' : '#3b82f6';
+        document.body.appendChild(d);
+        // random horizontal spawn above result box
+        const startX = resultRect.left + 20 + Math.random()*(resultRect.width-40);
+        const startY = resultRect.top - 30 - Math.random()*20;
+        d.style.left = startX + 'px'; d.style.top = startY + 'px';
+        // animate falling
+        requestAnimationFrame(()=>{
+            d.style.transition = 'transform 700ms cubic-bezier(.2,.8,.25,1), opacity 700ms linear';
+            const endY = resultRect.top + resultRect.height - 24 - Math.random()*24;
+            d.style.transform = `translateY(${endY - startY}px)`;
+            d.style.opacity = '1';
+        });
+        // fade out after
+        setTimeout(()=>{ d.style.opacity = '0'; }, 700);
+        setTimeout(()=>{ if(d && d.parentNode) d.parentNode.removeChild(d); }, 1200);
+    }
+}
+
+function startMix(r,g,b,onComplete){
+    const mixed = document.getElementById('mixed');
+    const rEl = document.getElementById('layerR');
+    const gEl = document.getElementById('layerG');
+    const bEl = document.getElementById('layerB');
+    // Slight motion: apply stirring class then fade layers out, then show unified overlay
+    mixed.style.background = `rgb(${r}, ${g}, ${b})`;
+    mixed.classList.remove('stir');
+    // briefly reduce layers' opacity for blend effect
+    rEl.style.transition = 'height 700ms ease, opacity 700ms ease';
+    gEl.style.transition = 'height 700ms ease, opacity 700ms ease';
+    bEl.style.transition = 'height 700ms ease, opacity 700ms ease';
+    rEl.style.opacity = '0.9'; gEl.style.opacity = '0.9'; bEl.style.opacity = '0.9';
+    // start stirring animation
+    requestAnimationFrame(()=>{
+        mixed.classList.add('stir');
+        mixed.style.opacity = '1';
+        mixed.style.transform = 'scale(1)';
+    });
+    // after stir animation, fade individual layers out to reveal uniform mix
+    setTimeout(()=>{
+        rEl.style.opacity = '0'; gEl.style.opacity = '0'; bEl.style.opacity = '0';
+        // update the main result display to match the mixed overlay for consistency
+        const resultEl = document.getElementById('result');
+        const rgb = `rgb(${r}, ${g}, ${b})`;
+        resultEl.style.background = `linear-gradient(180deg, ${rgb}, rgba(0,0,0,0.12))`;
+        document.getElementById('droplet').style.background = rgb;
+        document.getElementById('droplet').style.color = (r+g+b)/3 > 160 ? '#022' : '#fff';
+        // hide the overlay after a short moment
+        setTimeout(()=>{ mixed.style.opacity = '0'; mixed.classList.remove('stir'); }, 200);
+        // call completion callback if provided (after full mixing)
+        if(typeof onComplete === 'function'){
+            setTimeout(()=>{ onComplete(); }, 220);
+        }
+    }, 700);
+}
+
+document.getElementById('judgeBtn').addEventListener('click', function(){
+    // compute input-based percentages (slider proportions)
+    const rInput = Number(document.getElementById('red').value);
+    const gInput = Number(document.getElementById('green').value);
+    const bInput = Number(document.getElementById('blue').value);
+    const total = rInput + gInput + bInput;
+    const pr = total === 0 ? 0 : Math.round(100 * rInput / total);
+    const pg = total === 0 ? 0 : Math.round(100 * gInput / total);
+    const pb = total === 0 ? 0 : Math.round(100 * bInput / total);
+    // animate pour and run judge after mixing animation completes
+    animatePour(pr, pg, pb, function(){
+        const [r,g,b] = mixColor();
+        fetch(`/judge/?r=${r}&g=${g}&b=${b}&pr=${targetColor.p_r}&pg=${targetColor.p_g}&pb=${targetColor.p_b}`)
+            .then(res => res.json())
+            .then(data => {
+                const msgEl = document.getElementById("message");
+                const percent = data.target_percent
+                    ? `割合: ${data.target_percent.p_r}% ${data.target_percent.p_g}% ${data.target_percent.p_b}%`
+                    : `割合: ${targetColor.p_r}% ${targetColor.p_g}% ${targetColor.p_b}%`;
+                const rankText = `${data.rank}ランク — 差: ${data.diff}`;
+                msgEl.innerHTML = (data.clear ? `🎉 ${rankText}` : rankText) + `<br>` + percent;
+            });
+    });
+});
+
+// 新しいお題をサーバから取得して更新
+document.getElementById('newTargetBtn').addEventListener('click', function(){
+    fetch('/new_target/')
+        .then(r => r.json())
+        .then(n => {
+            targetColor = n;
+            const rgb = `rgb(${n.r},${n.g},${n.b})`;
+            const tb = document.getElementById('targetBox');
+            tb.style.transition = 'box-shadow 260ms ease, transform 260ms ease';
+            tb.style.transform = 'translateY(-6px)';
+            tb.style.boxShadow = '0 22px 60px rgba(2,6,23,0.6)';
+            tb.style.backgroundColor = rgb;
+            // clear message and reset layers
+            document.getElementById('message').textContent = '';
+            document.getElementById('layerR').style.height = '0%';
+            document.getElementById('layerG').style.height = '0%';
+            document.getElementById('layerB').style.height = '0%';
+            setTimeout(()=>{ tb.style.transform=''; tb.style.boxShadow=''; }, 300);
+        }).catch(()=>{});
+});
+
+document.getElementById('resetBtn').addEventListener('click', function(){
+  document.getElementById('red').value = 0;
+  document.getElementById('green').value = 0;
+  document.getElementById('blue').value = 0;
+  update();
+    document.getElementById('message').textContent = '';
+    // reset animated layers
+    document.getElementById('layerR').style.height = '0%';
+    document.getElementById('layerG').style.height = '0%';
+    document.getElementById('layerB').style.height = '0%';
+        // reset layer opacity/transitions
+        document.getElementById('layerR').style.opacity = '0';
+        document.getElementById('layerG').style.opacity = '0';
+        document.getElementById('layerB').style.opacity = '0';
+        document.getElementById('layerR').style.transition = '';
+        document.getElementById('layerG').style.transition = '';
+        document.getElementById('layerB').style.transition = '';
+        // reset mixed overlay
+        const mixed = document.getElementById('mixed');
+        if(mixed){ mixed.style.opacity = '0'; mixed.classList.remove('stir'); mixed.style.background = 'transparent'; }
+        // reset result display to neutral background
+        document.getElementById('result').style.background = 'linear-gradient(180deg, rgba(0,0,0,0.06), rgba(0,0,0,0.1))';
+        document.getElementById('droplet').style.background = 'linear-gradient(180deg,rgba(255,255,255,0.16),rgba(255,255,255,0.04))';
+});
 </script>
 </body>
 </html>

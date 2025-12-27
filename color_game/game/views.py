@@ -37,6 +37,18 @@ def index(request):
     return render(request, "game/index.html", {"target": target})
 
 
+def new_target(request):
+    # return a new random target as JSON (same format as index provides)
+    pr = random.randint(0, 100)
+    pg = random.randint(0, 100)
+    pb = random.randint(0, 100)
+    if pr + pg + pb == 0:
+        pb = 1
+    rr, gg, bb = _mix_from_percent(pr, pg, pb)
+    target = {"p_r": pr, "p_g": pg, "p_b": pb, "r": rr, "g": gg, "b": bb}
+    return JsonResponse(target)
+
+
 def judge(request):
     # クライアントから送られた割合 (pr/pg/pb) があればそれを優先してお題RGBを再現
     pr = request.GET.get("pr")
